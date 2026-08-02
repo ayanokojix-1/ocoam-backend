@@ -529,7 +529,7 @@ const pioneer_discount_applied = count < 20 ? 1 : 0;
 
       // Send confirmation email
       try {
-        await sendApplicationConfirmationEmail(userEmail, applicationId, pioneer_discount_applied);
+        await sendApplicationConfirmationEmail(userEmail, applicationId, pioneer_discount_applied, programme);
       } catch (emailError) {
         console.error("Email sending error:", emailError);
         // Don't fail the request if email fails

@@ -33,6 +33,11 @@ const Classes = {
     return results.rows[0]
  },
 
+  async findClassByAccessCode(accessCode){
+    const results = await db.query("SELECT * FROM live_classes WHERE access_code = $1",[accessCode])
+    return results.rows[0]
+ },
+
 async updateClassStatus(status,id){
     await db.query("UPDATE live_classes SET status = $1 WHERE id = $2",[status,id])
 }

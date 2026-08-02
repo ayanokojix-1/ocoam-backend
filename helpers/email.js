@@ -89,7 +89,20 @@ async function sendVerificationEmail(userEmail, token) {
   });
 }
 
-async function sendApplicationConfirmationEmail(userEmail, applicationId, pioneerDiscount) {
+// Keep in sync with the track details shown on the site (FullPage.jsx
+// programs array) and the form's programme radio labels (form.jsx).
+const PROGRAMME_DETAILS = {
+  professional: {
+    name: "Part-time (Weekend) Track",
+    startDate: "25th September 2026",
+  },
+  advanced: {
+    name: "Full-time Track",
+    startDate: "21st September 2026",
+  },
+};
+
+async function sendApplicationConfirmationEmail(userEmail, applicationId, pioneerDiscount, programme) {
   const discountHtml = pioneerDiscount
     ? `
       <div style="margin: 24px 0; background: #fff7cc; border: 1px solid #e4c84a; border-radius: 16px; padding: 20px;">
@@ -102,6 +115,23 @@ async function sendApplicationConfirmationEmail(userEmail, applicationId, pionee
 
   const discountText = pioneerDiscount
     ? "\n\nPioneer cohort bonus: you qualified for the ₦30,000 pioneer discount."
+    : "";
+
+  const programmeDetails = PROGRAMME_DETAILS[programme];
+
+  const programmeHtml = programmeDetails
+    ? `
+      <div style="margin: 24px 0; background: linear-gradient(135deg, #e8f5ec 0%, #f6fbf8 100%); border: 1px solid #cfe5d6; border-radius: 18px; padding: 24px;">
+        <p style="margin: 0 0 8px; color: #4b6354; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;">Programme</p>
+        <p style="margin: 0 0 14px; font-size: 20px; font-weight: 800; color: #14532d;">${programmeDetails.name}</p>
+        <p style="margin: 0 0 8px; color: #4b6354; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;">Classes Begin</p>
+        <p style="margin: 0; font-size: 20px; font-weight: 800; color: #14532d;">${programmeDetails.startDate}</p>
+      </div>
+    `
+    : "";
+
+  const programmeText = programmeDetails
+    ? `\n\nProgramme: ${programmeDetails.name}\nClasses begin: ${programmeDetails.startDate}`
     : "";
 
   await sendEmail({
@@ -133,6 +163,8 @@ async function sendApplicationConfirmationEmail(userEmail, applicationId, pionee
             </p>
           </div>
 
+          ${programmeHtml}
+
           ${discountHtml}
 
           <h2 style="margin: 30px 0 12px; color: #14532d; font-size: 20px;">What happens next</h2>
@@ -157,7 +189,7 @@ async function sendApplicationConfirmationEmail(userEmail, applicationId, pionee
         </div>
       </div>
     `,
-    text: `Your application has been submitted.\n\nApplication ID: ${applicationId}\nStore this application ID carefully. We will use it to identify your application in future.${discountText}\n\nWhat happens next:\n1. Our admissions team will review your application.\n2. You will receive another email when there is an update on your admission status.\n3. Keep your application ID available whenever you contact the school.\n\nNeed help?\nWhatsApp/Call: +234 802 298 1214\nEmail: ${getReplyToAddress()}\n\nAdmissions Office\n${SCHOOL_NAME}`,
+    text: `Your application has been submitted.\n\nApplication ID: ${applicationId}\nStore this application ID carefully. We will use it to identify your application in future.${programmeText}${discountText}\n\nWhat happens next:\n1. Our admissions team will review your application.\n2. You will receive another email when there is an update on your admission status.\n3. Keep your application ID available whenever you contact the school.\n\nNeed help?\nWhatsApp/Call: +234 802 298 1214\nEmail: ${getReplyToAddress()}\n\nAdmissions Office\n${SCHOOL_NAME}`,
   });
 }
 

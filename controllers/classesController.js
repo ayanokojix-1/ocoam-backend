@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const Classes = require("../models/classesModel");
 
 const classes = {
@@ -119,6 +120,49 @@ async startClass(req,res){
       message: "An error occurred"
     });
     }
+},
+
+// Mints a short-lived token the video-call service can verify, so it doesn't
+// have to trust a client-supplied "role" for who's the moderator.
+async getRoomToken(req, res) {
+  const { accessCode } = req.params;
+
+  try {
+    const classInfo = await Classes.findClassByAccessCode(accessCode);
+    if (!classInfo) {
+      return res.status(404).json({
+        status: 404,
+        message: "Class not found"
+      });
+    }
+
+    const role = classInfo.moderator_id === req.user.id ? "moderator" : "student";
+
+    const roomToken = jwt.sign(
+      {
+        userId: req.user.id,
+        name: req.user.username,
+        role,
+        roomId: accessCode
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "4h" }
+    );
+
+    res.json({
+      status: 200,
+      message: "Room token issued",
+      token: roomToken,
+      role,
+      name: req.user.username
+    });
+  } catch (error) {
+    console.error("Error issuing room token:", error);
+    res.status(500).json({
+      status: 500,
+      message: "An error occurred"
+    });
+  }
 }
 
 }
